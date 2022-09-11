@@ -8,7 +8,7 @@ public class GameController : MonoBehaviour
 {
     private static GameController s_instance;
     private GameState _state;
-    private int _score;
+    private int _score = 0;
     private int _dragonHitScore = 10;
     private int _dragonKillScore = 50;
     [SerializeField] private float _maxHealth;

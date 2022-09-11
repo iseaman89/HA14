@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Creature : MonoBehaviour, IDestructable
@@ -8,7 +6,7 @@ public class Creature : MonoBehaviour, IDestructable
     protected Rigidbody2D rigidbody;
     [SerializeField] protected float speed;
     [SerializeField] protected float damage;
-    [SerializeField] protected float health = 100;
+    [SerializeField] protected float health;
 
     public float Health { get => health; set => health = value; }
 
@@ -25,8 +23,10 @@ public class Creature : MonoBehaviour, IDestructable
 
     public void Hit(float damage)
     {
+
         Health -= damage;
         GameController.S_instance.Hit(this);
+        Debug.Log(health + " health");
         if (Health <= 0)
         {
             Die();

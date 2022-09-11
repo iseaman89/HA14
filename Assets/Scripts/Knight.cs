@@ -57,7 +57,11 @@ public class Knight : Creature, IDestructable
             //Attack();
             Invoke("Attack", hitDelay);
         }
-        if (Input.GetButtonDown("Jump") && onGround) rigidbody.AddForce(Vector2.up * jumpForce);
+        if (Input.GetButtonDown("Jump") && onGround)
+        {
+            rigidbody.AddForce(Vector2.up * jumpForce);
+        }
+
         animator.SetFloat("Speed", Mathf.Abs(Input.GetAxis("Horizontal")));
         Vector2 velocity = rigidbody.velocity;
         velocity.x = Input.GetAxis("Horizontal") * speed;
@@ -114,16 +118,4 @@ public class Knight : Creature, IDestructable
             }
         }
     }
-
-    public void Hit(float damage)
-    {
-        Health -= damage;
-        if (Health < 0)
-        {
-            Die();
-        }
-    }
-
-    public void Die() => Destroy(gameObject);
-
 }

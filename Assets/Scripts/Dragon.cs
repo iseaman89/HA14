@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Dragon : Creature, IDestructable
@@ -62,15 +59,4 @@ public class Dragon : Creature, IDestructable
             }
         }
     }
-
-    public void Hit(float damage)
-    {
-        Health -= damage;
-        if (Health <= 0)
-        {
-            Die();
-        }
-    }
-
-    public void Die() => Destroy(gameObject);
 }
