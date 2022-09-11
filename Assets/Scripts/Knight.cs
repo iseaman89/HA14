@@ -2,32 +2,66 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Knight : MonoBehaviour
+public class Knight : Creature, IDestructable
 {
-    private Animator animator;
-    private Rigidbody2D rigidbody2D;
-    [SerializeField] private float speed;
+    [SerializeField] private float stairSpeed;
     [SerializeField] private float jumpForce;
+    [SerializeField] private float attackRange;
+    [SerializeField] private float hitDelay;
     [SerializeField] private Transform groundCheck;
+    [SerializeField] private Transform attackPoint;
     private bool onGround = true;
 
+    private bool onStair;
+
+    public Stair stair;
+
+    public bool OnStair
+    {
+        get => onStair; set
+
+        {
+            if (value)
+            {
+                rigidbody.gravityScale = 0;
+            }
+
+            else
+            {
+                rigidbody.gravityScale = 1;
+            }
+
+            onStair = value;
+        }
+    }
 
     private void Awake()
     {
         animator = gameObject.GetComponentInChildren<Animator>();
-        rigidbody2D = gameObject.GetComponent<Rigidbody2D>();
+        rigidbody = gameObject.GetComponent<Rigidbody2D>();
+    }
+
+    private void Start()
+    {
+        health = GameController.S_instance.MaxHealth;
     }
 
     private void Update()
     {
+
         onGround = CheckGround();
-        animator.SetBool("Jump", onGround);
-        if (Input.GetButtonDown("Fire1")) animator.SetTrigger("Attack");
-        if (Input.GetButtonDown("Jump") && onGround) rigidbody2D.AddForce(Vector2.up * jumpForce);
+        animator.SetBool("Jump", !onGround);
+        if (Input.GetButtonDown("Fire1"))
+        {
+            animator.SetTrigger("Attack");
+            //Attack();
+            Invoke("Attack", hitDelay);
+        }
+        if (Input.GetButtonDown("Jump") && onGround) rigidbody.AddForce(Vector2.up * jumpForce);
         animator.SetFloat("Speed", Mathf.Abs(Input.GetAxis("Horizontal")));
-        Vector2 velocity = rigidbody2D.velocity;
+        Vector2 velocity = rigidbody.velocity;
         velocity.x = Input.GetAxis("Horizontal") * speed;
-        rigidbody2D.velocity = velocity;
+        rigidbody.velocity = velocity;
         if (transform.localScale.x < 0)
         {
             if (Input.GetAxis("Horizontal") > 0)
@@ -41,6 +75,12 @@ public class Knight : MonoBehaviour
             {
                 transform.localScale = new Vector3(-1, 1, 1);
             }
+        }
+        if (OnStair)
+        {
+            velocity = rigidbody.velocity;
+            velocity.y = Input.GetAxis("Vertical") * stairSpeed;
+            rigidbody.velocity = velocity;
         }
     }
 
@@ -56,5 +96,34 @@ public class Knight : MonoBehaviour
         }
         return false;
     }
+
+    private void Attack()
+    {
+        Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRange);
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            if (!GameObject.Equals(hits[i].gameObject, gameObject))
+            {
+                IDestructable destructable = hits[i].gameObject.GetComponent<IDestructable>();
+                if (destructable != null)
+                {
+                    destructable.Hit(damage);
+                    break;
+                }
+            }
+        }
+    }
+
+    public void Hit(float damage)
+    {
+        Health -= damage;
+        if (Health < 0)
+        {
+            Die();
+        }
+    }
+
+    public void Die() => Destroy(gameObject);
 
 }
