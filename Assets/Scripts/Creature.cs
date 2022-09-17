@@ -7,6 +7,7 @@ public class Creature : MonoBehaviour, IDestructable
     [SerializeField] protected float speed;
     [SerializeField] protected float damage;
     [SerializeField] protected float health;
+    [SerializeField] protected float dieDelay;
 
     public float Health { get => health; set => health = value; }
 
@@ -26,7 +27,6 @@ public class Creature : MonoBehaviour, IDestructable
 
         Health -= damage;
         GameController.S_instance.Hit(this);
-        Debug.Log(health + " health");
         if (Health <= 0)
         {
             Die();

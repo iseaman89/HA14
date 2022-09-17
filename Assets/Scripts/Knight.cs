@@ -4,22 +4,23 @@ using UnityEngine;
 
 public class Knight : Creature, IDestructable
 {
-    [SerializeField] private float stairSpeed;
-    [SerializeField] private float jumpForce;
-    [SerializeField] private float attackRange;
-    [SerializeField] private float hitDelay;
-    [SerializeField] private Transform groundCheck;
-    [SerializeField] private Transform attackPoint;
-    private bool onGround = true;
+    [SerializeField] private float _stairSpeed;
+    [SerializeField] private float _jumpForce;
+    [SerializeField] private float _attackRange;
+    [SerializeField] private float _hitDelay;
+    [SerializeField] private Transform _groundCheck;
+    [SerializeField] private Transform _attackPoint;
 
-    private bool onStair;
+    private bool _onGround = true;
+    private bool _onStair;
 
     public Stair stair;
 
     public bool OnStair
     {
-        get => onStair; set
+        get => _onStair;
 
+        set
         {
             if (value)
             {
@@ -31,14 +32,8 @@ public class Knight : Creature, IDestructable
                 rigidbody.gravityScale = 1;
             }
 
-            onStair = value;
+            _onStair = value;
         }
-    }
-
-    private void Awake()
-    {
-        animator = gameObject.GetComponentInChildren<Animator>();
-        rigidbody = gameObject.GetComponent<Rigidbody2D>();
     }
 
     private void Start()
@@ -48,24 +43,27 @@ public class Knight : Creature, IDestructable
 
     private void Update()
     {
+        _onGround = CheckGround();
+        animator.SetBool("Jump", !_onGround);
 
-        onGround = CheckGround();
-        animator.SetBool("Jump", !onGround);
-        if (Input.GetButtonDown("Fire1"))
-        {
-            animator.SetTrigger("Attack");
-            //Attack();
-            Invoke("Attack", hitDelay);
-        }
-        if (Input.GetButtonDown("Jump") && onGround)
-        {
-            rigidbody.AddForce(Vector2.up * jumpForce);
-        }
 
         animator.SetFloat("Speed", Mathf.Abs(Input.GetAxis("Horizontal")));
         Vector2 velocity = rigidbody.velocity;
         velocity.x = Input.GetAxis("Horizontal") * speed;
         rigidbody.velocity = velocity;
+
+        if (Input.GetButtonDown("Fire1"))
+        {
+            animator.SetTrigger("Attack");
+            Invoke("Attack", _hitDelay);
+        }
+        if (Input.GetButtonDown("Jump") && _onGround)
+        {
+            animator.SetBool("Jump", _onGround);
+
+            rigidbody.AddForce(Vector2.up * _jumpForce);
+        }
+
         if (transform.localScale.x < 0)
         {
             if (Input.GetAxis("Horizontal") > 0)
@@ -83,14 +81,14 @@ public class Knight : Creature, IDestructable
         if (OnStair)
         {
             velocity = rigidbody.velocity;
-            velocity.y = Input.GetAxis("Vertical") * stairSpeed;
+            velocity.y = Input.GetAxis("Vertical") * _stairSpeed;
             rigidbody.velocity = velocity;
         }
     }
 
     private bool CheckGround()
     {
-        RaycastHit2D[] hits = Physics2D.LinecastAll(transform.position, groundCheck.position);
+        RaycastHit2D[] hits = Physics2D.LinecastAll(transform.position, _groundCheck.position);
         for (int i = 0; i < hits.Length; i++)
         {
             if (!GameObject.Equals(hits[i].collider.gameObject, gameObject))
@@ -103,7 +101,7 @@ public class Knight : Creature, IDestructable
 
     private void Attack()
     {
-        Collider2D[] hits = Physics2D.OverlapCircleAll(attackPoint.position, attackRange);
+        Collider2D[] hits = Physics2D.OverlapCircleAll(_attackPoint.position, _attackRange);
 
         for (int i = 0; i < hits.Length; i++)
         {

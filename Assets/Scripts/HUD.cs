@@ -21,7 +21,5 @@ public class HUD : MonoBehaviour
     public void SetScore(string scoreValue)
     {
         _scoreLabel.text = scoreValue;
-        Debug.Log(_scoreLabel.text + " scorelabel");
-        Debug.Log(scoreValue + " scorevalue");
     }
 }

@@ -2,13 +2,7 @@ using UnityEngine;
 
 public class Dragon : Creature, IDestructable
 {
-    [SerializeField] private CircleCollider2D _hitCollider;
-
-    private void Awake()
-    {
-        rigidbody = gameObject.GetComponent<Rigidbody2D>();
-        animator = gameObject.GetComponent<Animator>();
-    }
+    [SerializeField] private CircleCollider2D hitCollider;
 
     private void Update()
     {
@@ -44,8 +38,8 @@ public class Dragon : Creature, IDestructable
 
     public void Attack()
     {
-        Vector3 hitPosition = transform.TransformPoint(_hitCollider.offset);
-        Collider2D[] hits = Physics2D.OverlapCircleAll(hitPosition, _hitCollider.radius);
+        Vector3 hitPosition = transform.TransformPoint(hitCollider.offset);
+        Collider2D[] hits = Physics2D.OverlapCircleAll(hitPosition, hitCollider.radius);
 
         for (int i = 0; i < hits.Length; i++)
         {
