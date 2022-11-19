@@ -14,7 +14,7 @@ public class Knight : Creature, IDestructable
     private bool _onGround = true;
     private bool _onStair;
 
-    public Stair stair;
+    private Stair _stair;
 
     public bool OnStair
     {
@@ -38,7 +38,8 @@ public class Knight : Creature, IDestructable
 
     private void Start()
     {
-        health = GameController.S_instance.MaxHealth;
+        GameController.S_instance.Knight = this;
+        GameController.S_instance.OnUpdateHeroParameters += HandleOnUpdateParameters;
     }
 
     private void Update()
@@ -46,15 +47,14 @@ public class Knight : Creature, IDestructable
         _onGround = CheckGround();
         animator.SetBool("Jump", !_onGround);
 
-
         animator.SetFloat("Speed", Mathf.Abs(Input.GetAxis("Horizontal")));
         Vector2 velocity = rigidbody.velocity;
-        velocity.x = Input.GetAxis("Horizontal") * speed;
+        velocity.x = Input.GetAxis("Horizontal") * Speed;
         rigidbody.velocity = velocity;
 
         if (Input.GetButtonDown("Fire1"))
         {
-            animator.SetTrigger("Attack");
+            animator.SetBool("Attack", true);
             Invoke("Attack", _hitDelay);
         }
         if (Input.GetButtonDown("Jump") && _onGround)
@@ -62,6 +62,7 @@ public class Knight : Creature, IDestructable
             animator.SetBool("Jump", _onGround);
 
             rigidbody.AddForce(Vector2.up * _jumpForce);
+            GameController.S_instance.AudioManager.PlaySound("Jump");
         }
 
         if (transform.localScale.x < 0)
@@ -86,6 +87,11 @@ public class Knight : Creature, IDestructable
         }
     }
 
+    private void OnDestroy()
+    {
+        GameController.S_instance.OnUpdateHeroParameters -= HandleOnUpdateParameters;
+    }
+
     private bool CheckGround()
     {
         RaycastHit2D[] hits = Physics2D.LinecastAll(transform.position, _groundCheck.position);
@@ -101,19 +107,17 @@ public class Knight : Creature, IDestructable
 
     private void Attack()
     {
-        Collider2D[] hits = Physics2D.OverlapCircleAll(_attackPoint.position, _attackRange);
+        GameController.S_instance.AudioManager.PlaySound("Attack");
 
-        for (int i = 0; i < hits.Length; i++)
-        {
-            if (!GameObject.Equals(hits[i].gameObject, gameObject))
-            {
-                IDestructable destructable = hits[i].gameObject.GetComponent<IDestructable>();
-                if (destructable != null)
-                {
-                    destructable.Hit(damage);
-                    break;
-                }
-            }
-        }
+        DoHit(_attackPoint.position, _attackRange, Damage);
+        
+        animator.SetBool("Attack", false);
+    }
+
+    private void HandleOnUpdateParameters(HeroParameters parameters)
+    {
+        Health = parameters.MaxHealth;
+        Damage = parameters.Damage;
+        Speed = parameters.Speed;
     }
 }

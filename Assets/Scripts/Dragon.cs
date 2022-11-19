@@ -7,7 +7,7 @@ public class Dragon : Creature, IDestructable
     private void Update()
     {
         Vector2 velocity = rigidbody.velocity;
-        velocity.x = speed * transform.localScale.x * -1;
+        velocity.x = Speed * transform.localScale.x * -1;
         rigidbody.velocity = velocity;
     }
 
@@ -17,10 +17,28 @@ public class Dragon : Creature, IDestructable
         if (knight != null)
         {
             animator.SetTrigger("Attack");
+            Attack();
         }
         else
         {
             ChangeDirection();
+        }
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        if (collision.gameObject.GetComponent<Knight>() != null)
+        {
+            for (int i = 0; i < collision.contacts.Length; i++)
+            {
+                Vector2 fromDragonToContactVector = collision.contacts[i].point
+                    - (Vector2)transform.position;
+
+                if (Vector2.Angle(fromDragonToContactVector, Vector2.up) < 45)
+                {
+                    Die();
+                }
+            }
         }
     }
 
@@ -39,18 +57,6 @@ public class Dragon : Creature, IDestructable
     public void Attack()
     {
         Vector3 hitPosition = transform.TransformPoint(hitCollider.offset);
-        Collider2D[] hits = Physics2D.OverlapCircleAll(hitPosition, hitCollider.radius);
-
-        for (int i = 0; i < hits.Length; i++)
-        {
-            if (!GameObject.Equals(hits[i].gameObject, gameObject))
-            {
-                IDestructable destructable = hits[i].gameObject.GetComponent<IDestructable>();
-                if (destructable != null)
-                {
-                    destructable.Hit(damage);
-                }
-            }
-        }
+        DoHit(hitPosition, hitCollider.radius, Damage);
     }
 }
